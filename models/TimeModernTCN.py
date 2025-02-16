@@ -5,6 +5,8 @@ import math
 from layers.Invertible import RevIN
 from layers.ModernTCN_Layer import series_decomp, Flatten_Head
 from layers.TimeSter import TimeSter
+import shap
+from lime import lime_tabular
 
 
 class LayerNorm(nn.Module):
@@ -219,15 +221,17 @@ class ModernTCN(nn.Module):
         # stem layer & down sampling layers(if needed)
         self.downsample_layers = nn.ModuleList()
         stem = nn.Sequential(
-
-            nn.Conv1d(1, dims[0], kernel_size=patch_size, stride=patch_stride),
+            nn.Conv1d(1, dims[0], kernel_size=patch_size, stride=patch_stride, dtype=torch.float32),
             nn.BatchNorm1d(dims[0])
         )
         self.downsample_layers.append(stem)
         for i in range(3):
             downsample_layer = nn.Sequential(
                 nn.BatchNorm1d(dims[i]),
-                nn.Conv1d(dims[i], dims[i + 1], kernel_size=downsample_ratio, stride=downsample_ratio),
+                nn.Conv1d(dims[i], dims[i+1], 
+                        kernel_size=downsample_ratio, 
+                        stride=downsample_ratio,
+                        dtype=torch.float32)  # Explicit dtype
             )
             self.downsample_layers.append(downsample_layer)
         self.patch_size = patch_size
@@ -322,6 +326,7 @@ class ModernTCN(nn.Module):
                 if N % self.downsample_ratio != 0:
                     pad_len = self.downsample_ratio - (N % self.downsample_ratio)
                     x = torch.cat([x, x[:, :, -pad_len:]],dim=-1)
+            x = x.float()  # Convert to float32
             x = self.downsample_layers[i](x)
             _, D_, N_ = x.shape
             x = x.reshape(B, M, D_, N_)
@@ -385,6 +390,12 @@ class Model(nn.Module):
         self.kernel_size = configs.kernel_size
         self.patch_size = configs.patch_size
         self.patch_stride = configs.patch_stride
+        # Initialize SHAP/LIME components
+        self.shap_explainer = None
+        self.lime_explainer = None
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # Rest of init code...
+        self.to(self.device)
 
 
         # decomp
@@ -404,6 +415,10 @@ class Model(nn.Module):
 
     def forward(self, x, x_mark_enc=None, x_dec=None, y_mark_dec=None):
 
+        # Unpack if using tuple input format
+        if isinstance(x, tuple):
+            x, temporal_features = x
+
         if self.decomposition:
             res_init, trend_init = self.decomp_module(x)
             res_init, trend_init = res_init.permute(0, 2, 1), trend_init.permute(0, 2, 1)
@@ -416,3 +431,61 @@ class Model(nn.Module):
             x = self.model(x, x_mark_enc)
             x = x.permute(0, 2, 1)
         return x
+    
+    def integrate_shap(self, data_loader):
+        if self.shap_explainer is None:
+            device = next(self.parameters()).device
+            
+            # Get both data and temporal features
+            background_data, background_temporal, _ = next(iter(data_loader))
+            background_data = background_data[:100].float().to(device)
+            background_temporal = background_temporal[:100].float().to(device)
+
+            # Create input tuple matching model's forward signature
+            background = (background_data, background_temporal)
+            
+            # Initialize SHAP with proper input format
+            self.shap_explainer = shap.DeepExplainer(self, background)
+
+        
+        # Generate SHAP values properly
+        shap_values = []
+        for batch_x, _, batch_temp, _ in data_loader:
+            inputs = (
+                batch_x.float().to(device), 
+                batch_temp.float().to(device)
+            )
+            batch_shap = self.shap_explainer.shap_values(inputs)
+            shap_values.append(batch_shap)
+        
+        return shap_values
+
+
+    def integrate_lime(self, data_loader):
+        if self.lime_explainer is None:
+            # Assuming the first element of the batch is the input data
+            train_data = next(iter(data_loader))[0].numpy()
+            self.lime_explainer = lime_tabular.LimeTabularExplainer(
+                training_data=train_data,
+                mode="regression",
+                feature_names=[f"Feature_{i}" for i in range(train_data.shape[1])]
+            )
+        
+        lime_explanations = []
+        for batch_x, _, _, _ in data_loader:
+            for single_x in batch_x:
+                explanation = self.lime_explainer.explain_instance(
+                    single_x.numpy(),
+                    self.predict_single,
+                    num_features=10
+                )
+                lime_explanations.append(explanation)
+        
+        return lime_explanations
+
+    def predict_single(self, x):
+        # Helper method for LIME
+        x = torch.FloatTensor(x).unsqueeze(0)
+        with torch.no_grad():
+            return self.forward(x, None, None, None).squeeze().numpy()
+

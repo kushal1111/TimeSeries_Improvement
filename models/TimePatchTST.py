@@ -34,6 +34,9 @@ class Model(nn.Module):
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
+        # Initialize SHAP/LIME components
+        self.shap_explainer = None
+        self.lime_explainer = None
         padding = stride
 
         # patching and embedding
@@ -231,3 +234,44 @@ class Model(nn.Module):
             dec_out = self.classification(x_enc, x_mark_enc)
             return dec_out  # [B, N]
         return None
+    
+    def integrate_shap(self, data_loader):
+        if self.shap_explainer is None:
+            background = next(iter(data_loader))[0][:100].float()  # Use first 100 samples as background
+            self.shap_explainer = shap.DeepExplainer(self, background)
+        
+        shap_values = []
+        for batch_x, _, batch_x_mark, _ in data_loader:
+            batch_shap_values = self.shap_explainer.shap_values(batch_x)
+            shap_values.append(batch_shap_values)
+        
+        return shap_values
+
+    def integrate_lime(self, data_loader):
+        if self.lime_explainer is None:
+            # Assuming the first element of the batch is the input data
+            train_data = next(iter(data_loader))[0].numpy()
+            self.lime_explainer = lime_tabular.LimeTabularExplainer(
+                training_data=train_data,
+                mode="regression",
+                feature_names=[f"Feature_{i}" for i in range(train_data.shape[1])]
+            )
+        
+        lime_explanations = []
+        for batch_x, _, _, _ in data_loader:
+            for single_x in batch_x:
+                explanation = self.lime_explainer.explain_instance(
+                    single_x.numpy(),
+                    self.predict_single,
+                    num_features=10
+                )
+                lime_explanations.append(explanation)
+        
+        return lime_explanations
+
+    def predict_single(self, x):
+        # Helper method for LIME
+        x = torch.FloatTensor(x).unsqueeze(0)
+        with torch.no_grad():
+            return self.forward(x, None, None, None).squeeze().numpy()
+

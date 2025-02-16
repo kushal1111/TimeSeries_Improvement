@@ -113,6 +113,38 @@ def visual(true, preds=None, name='./pic/test.pdf'):
     plt.legend()
     plt.savefig(name, bbox_inches='tight')
 
+def visual_xai(true, pred, grad_cam, attn_weights, save_path):
+    plt.figure(figsize=(12, 10))
+    
+    # 1. Forecast Comparison
+    plt.subplot(3, 1, 1)
+    plt.plot(true, label='True', linewidth=2)
+    plt.plot(pred, label='Pred', linestyle='--')
+    plt.title('Forecast Comparison')
+    plt.legend()
+    
+    # 2. Grad-CAM Heatmap
+    plt.subplot(3, 1, 2)
+    plt.imshow(grad_cam[np.newaxis,:], cmap='viridis', 
+              aspect='auto', interpolation='nearest')
+    plt.colorbar()
+    plt.title('Grad-CAM Importance')
+    plt.ylabel('Feature Dimension')
+    
+    # 3. Attention Weights
+    plt.subplot(3, 1, 3)
+    plt.imshow(attn_weights.T, cmap='hot', 
+              aspect='auto', interpolation='nearest')
+    plt.colorbar()
+    plt.title('Temporal Attention Patterns')
+    plt.xlabel('Input Time Steps')
+    plt.ylabel('Prediction Steps')
+    
+    plt.tight_layout()
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close()
+
+
 def visual_timester(true, preds=None, timester=None, bonster=None, name='./pic/test.pdf'):
     """
     Results visualization

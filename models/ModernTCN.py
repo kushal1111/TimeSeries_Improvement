@@ -212,6 +212,9 @@ class ModernTCN(nn.Module):
 
         # RevIN
         self.revin = revin
+        # Initialize SHAP/LIME components
+        self.shap_explainer = None
+        self.lime_explainer = None
         if self.revin:
             self.revin_layer = RevIN(c_in, affine=affine, subtract_last=subtract_last)
 

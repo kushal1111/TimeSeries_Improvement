@@ -1,7 +1,7 @@
 from data_provider.data_factory import data_provider
 from torch.optim import lr_scheduler
 from exp.exp_basic import Exp_Basic
-from utils.tools import EarlyStopping, adjust_learning_rate, visual, AverageMeter
+from utils.tools import EarlyStopping, adjust_learning_rate, visual, AverageMeter, visual_xai
 from utils.metrics import metric
 from torch import optim
 import torch
@@ -10,6 +10,10 @@ import os
 import time
 import warnings
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
+import shap
+import matplotlib.pyplot as plt
+from lime import lime_tabular
 
 warnings.filterwarnings('ignore')
 
@@ -17,6 +21,7 @@ warnings.filterwarnings('ignore')
 class Exp_Long_Term_Forecast(Exp_Basic):
     def __init__(self, args):
         super(Exp_Long_Term_Forecast, self).__init__(args)
+        self.writer = SummaryWriter(log_dir=f"./tensorboard_logs/{args.model}")
 
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
@@ -41,6 +46,23 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         else:
             raise NotImplementedError
         return criterion
+    
+    def log_shap_lime_to_tensorboard(self, shap_values, lime_explanations, step):
+        # Plot SHAP values
+        shap_figure = plt.figure()
+        shap.summary_plot(shap_values, show=False)
+        self.writer.add_figure('SHAP Summary Plot', shap_figure, global_step=step)
+
+        # Plot LIME explanations
+        lime_figure = plt.figure()
+        for i, explanation in enumerate(lime_explanations):
+            plt.subplot(1, len(lime_explanations), i+1)
+            explanation.as_pyplot_figure()
+        self.writer.add_figure('LIME Explanations', lime_figure, global_step=step)
+
+        # Close figures
+        plt.close(shap_figure)
+        plt.close(lime_figure)
 
     def vali(self, vali_data, vali_loader, criterion):
         total_loss = AverageMeter()
@@ -90,6 +112,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         train_data, train_loader = self._get_data(flag='train')
         vali_data, vali_loader = self._get_data(flag='val')
         test_data, test_loader = self._get_data(flag='test')
+
+        # Add XAI metrics tracking
+        self.attention_consistency = AverageMeter()
+        self.gradcam_variance = AverageMeter()
 
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
@@ -206,6 +232,13 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss.avg, vali_loss.avg, test_loss.avg))
+            # Log training metrics
+            self.writer.add_scalar("Loss/train", train_loss.avg, epoch)
+            self.writer.add_scalar("Loss/val", vali_loss.avg, epoch)
+            # Log model parameter histograms
+            for name, param in self.model.named_parameters():
+                self.writer.add_histogram(f"Parameters/{name}", param, epoch)
+
             early_stopping(vali_loss.avg, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")
@@ -269,6 +302,14 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         else:
                             outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
+                # Add XAI visualization
+                if with_curve:
+                    # Get explanation maps
+                    grad_cam = self.model.module.get_grad_cam().cpu().numpy()
+                    attn_weights = self.model.module.attention_weights
+                    
+                    # Visualize alongside predictions
+                    visual_xai(true, pred, grad_cam, attn_weights, os.path.join(folder_path, str(i)+'_xai.svg'))
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, -self.args.pred_len:, :]
                 batch_y = batch_y[:, -self.args.pred_len:, :].to(self.device)
@@ -295,6 +336,13 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
                     pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
                     visual(gt, pd, os.path.join(folder_path, str(i) + '.svg'))
+        # Generate SHAP values
+        shap_values = self.model.integrate_shap(test_loader)
+
+        # Generate LIME explanations
+        lime_explanations = self.model.integrate_lime(test_loader)
+        # Log explanations to TensorBoard at a specific step
+        self.log_shap_lime_to_tensorboard(shap_values, lime_explanations, step=0)
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -310,6 +358,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
+        # Log test metrics
+        self.writer.add_scalar("MSE/test", mse, 0)
+        self.writer.add_scalar("MAE/test", mae, 0)
+        # Close the writer when done
+        self.writer.close()
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}'.format(mse, mae))

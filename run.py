@@ -139,6 +139,11 @@ if __name__ == '__main__':
     parser.add_argument('--time_feature_types', type=str, nargs='+',
                         default=['HourOfDay','DayOfWeek'], help='features for time feature embedding')
 
+    parser.add_argument('--xai_mode', type=str, default='attn_gradcam',
+                    help='XAI techniques: [attn_gradcam, shap_time, full_xai]')
+    parser.add_argument('--xai_alpha', type=float, default=0.1,
+                    help='Weight for explanation consistency loss')
+
     args = parser.parse_args()
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -184,7 +189,7 @@ if __name__ == '__main__':
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             total_params = sum(p.numel() for p in exp.model.parameters())
             print(f"Parameters: {total_params}")
-            exp.train(setting)
+            # exp.train(setting)
 
             print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
             exp.test(setting, with_curve=args.with_curve)

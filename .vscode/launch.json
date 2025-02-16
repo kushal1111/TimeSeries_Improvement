@@ -1,0 +1,56 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./run.py",
+            "console": "integratedTerminal",
+            "env": {
+                "PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT": "1"
+            },
+            "args": [
+                "--with_curve", "0",
+                "--task_name", "long_term_forecast",
+                "--time_feature_types", "HourOfDay",
+                "--is_training", "1",
+                "--root_path", "./dataset/ETT-small/",
+                "--data_path", "ETTh1.csv",
+                "--model_id", "ETTh1_96_96",
+                "--model", "TimeModernTCN",
+                "--data", "ETTh1",
+                "--features", "M",
+                "--seq_len", "96",
+                "--label_len", "0",
+                "--pred_len", "96",
+                "--e_layers", "1",
+                "--d_layers", "1",
+                "--factor", "3",
+                "--enc_in", "7",
+                "--dec_in", "7",
+                "--c_out", "7",
+                "--des", "Exp",
+                "--n_heads", "2",
+                "--rda", "1",
+                "--rdb", "1",
+                "--ksize", "5",
+                "--beta", "0.9",
+                "--itr", "1",
+                "--train_epochs", "1",
+                "--batch_size", "512",
+                "--patience", "20",
+                "--learning_rate", "0.0001",
+                "--des", "Exp",
+                "--rda", "1",
+                "--rdb", "1",
+                "--ksize", "5",
+                "--beta", "0.9",
+                "--lradj", "type3"
+            ]
+        }
+    ]
+}
