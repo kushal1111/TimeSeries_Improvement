@@ -1,4 +1,5 @@
 from data_provider.data_factory import data_provider
+from torch.utils.data import Subset, DataLoader
 from torch.optim import lr_scheduler
 from exp.exp_basic import Exp_Basic
 from utils.tools import EarlyStopping, adjust_learning_rate, visual, AverageMeter
@@ -10,13 +11,16 @@ import os
 import time
 import warnings
 import numpy as np
+import shap
+import matplotlib.pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
 
 warnings.filterwarnings('ignore')
-
 
 class Exp_Long_Term_Forecast(Exp_Basic):
     def __init__(self, args):
         super(Exp_Long_Term_Forecast, self).__init__(args)
+        self.writer = SummaryWriter(log_dir=f'runs/{args.model}_{args.data}')
 
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
@@ -180,6 +184,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         loss = criterion(outputs, batch_y)
                         train_loss.update(loss.item(), outputs.shape[0])
 
+                # Log training loss
+                self.writer.add_scalar('Loss/train', loss.item(), epoch * len(train_loader) + i)
                 if (i + 1) % 100 == 0:
                     print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
                     speed = (time.time() - time_now) / iter_count
@@ -200,9 +206,14 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     adjust_learning_rate(model_optim, epoch + 1, self.args, scheduler=scheduler, printout=False)
                     scheduler.step()
                 
+            # Log average training loss for the epoch
+            self.writer.add_scalar('Loss/train_epoch', train_loss.avg, epoch)
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
+            # Log validation and test losses
+            self.writer.add_scalar('Loss/validation', vali_loss.avg, epoch)
+            self.writer.add_scalar('Loss/test', test_loss.avg, epoch)
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss.avg, vali_loss.avg, test_loss.avg))
@@ -224,6 +235,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
     def test(self, setting, test=0, with_curve=1):
         #batch_size = self.args.batch_size
         #self.args.batch_size = 1
+        train_data, train_loader = self._get_data(flag='train')
         test_data, test_loader = self._get_data(flag='test') # plot curve
         #self.args.batch_size = batch_size
         if test:
@@ -295,6 +307,32 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
                     pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
                     visual(gt, pd, os.path.join(folder_path, str(i) + '.svg'))
+                    
+                # # Generate SHAP explanations
+                # # Create subset of first 100 samples
+                # train_subset = Subset(train_data, indices=range(100))
+
+                # # Create DataLoader
+                # background_loader = DataLoader(train_subset, batch_size=100, shuffle=False)
+
+                # # Get batch and move to device
+                # background_batch = next(iter(background_loader))
+                # background = tuple(tensor.to(self.device) for tensor in background_batch)
+                # # Use only the input tensor for SHAP explanation
+                # background_input = [background[0].to(self.device),background[1].to(self.device),background[2].to(self.device) ] # First element of tuple
+    
+                # # Initialize explainer with proper input
+                # explainer = shap.DeepExplainer(
+                #     self.model, 
+                #     [inputs[0] for inputs in background_input]  # Only pass sequence data
+                # )
+                # # explainer = shap.DeepExplainer(self.model, background_input)
+                # shap_values = explainer.shap_values(batch_x)
+                
+                # # Visualize explanations
+                # shap.summary_plot(shap_values, batch_x, plot_type="bar")
+                # plt.savefig(folder_path + f'shap_{i}.png')
+                # plt.close()
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -309,6 +347,14 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         #     os.makedirs(folder_path)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
+        # Log test metrics
+        self.writer.add_scalar('Test/MAE', mae, 0)
+        self.writer.add_scalar('Test/MSE', mse, 0)
+        self.writer.add_scalar('Test/RMSE', rmse, 0)
+        self.writer.add_scalar('Test/MAPE', mape, 0)
+        self.writer.add_scalar('Test/MSPE', mspe, 0)
+        
+        self.writer.close()
         print('mse:{}, mae:{}'.format(mse, mae))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")

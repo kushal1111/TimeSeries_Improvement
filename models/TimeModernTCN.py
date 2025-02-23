@@ -233,6 +233,20 @@ class ModernTCN(nn.Module):
         self.patch_size = patch_size
         self.patch_stride = patch_stride
         self.downsample_ratio = downsample_ratio
+        # Frequency encoder adjustment
+        self.freq_encoder = nn.Sequential(
+            nn.Conv1d(in_channels=7, out_channels=64, kernel_size=3, padding=1),  # Changed input channels
+            nn.ReLU(),
+            nn.Conv1d(64, 96, kernel_size=3, padding=1),
+        )
+        # Add after frequency encoder if channel mismatch persists
+        self.channel_align = nn.Conv1d(49, 7, kernel_size=1)  # Convert 49 channels → 7
+
+        # self.freq_encoder = nn.Sequential(
+        #     nn.Conv1d(in_channels=49, out_channels=64, kernel_size=3, padding=1),  # Changed input channels
+        #     nn.ReLU(),
+        #     nn.Conv1d(64, 128, kernel_size=3, padding=1)
+        # )
 
         if freq == 'h':
             time_feature_num = 4
@@ -306,9 +320,26 @@ class ModernTCN(nn.Module):
 
     def forward_feature(self, x, te=None):
 
-        B,M,L=x.shape
-
-        x = x.unsqueeze(-2)
+        B, M, L = x.shape  # Original input shape [Batch, Features, SeqLen]
+        x = x.unsqueeze(-2)  # [B, M, 1, L]
+        
+        # FFT processing
+        fft = torch.fft.rfft(x, dim=-1)  # [B, M, 1, N_freq]
+        magnitudes = torch.abs(fft)
+        
+        # Reshape for Conv1D
+        magnitudes = magnitudes.squeeze(2)  # [B, M, N_freq]
+        # magnitudes = magnitudes.permute(0, 2, 1)  # [B, N_freq, M] → [512, 49, 7]
+        magnitudes = magnitudes.float()
+        
+        # Frequency processing
+        freq_feats = self.freq_encoder(magnitudes)  # [B, 128, 7]
+        
+        # Adjust dimensions for fusion
+        freq_feats = freq_feats.permute(0, 2, 1)
+        freq_feats = self.channel_align(freq_feats) 
+        freq_feats = freq_feats.unsqueeze(2)  # [B, M, 1, 128]
+        x = x + freq_feats      # Combine with temporal features
         for i in range(self.num_stage):
             B, M, D, N = x.shape
             x = x.reshape(B * M, D, N)
@@ -322,6 +353,7 @@ class ModernTCN(nn.Module):
                 if N % self.downsample_ratio != 0:
                     pad_len = self.downsample_ratio - (N % self.downsample_ratio)
                     x = torch.cat([x, x[:, :, -pad_len:]],dim=-1)
+            x = x.float()
             x = self.downsample_layers[i](x)
             _, D_, N_ = x.shape
             x = x.reshape(B, M, D_, N_)
@@ -338,6 +370,8 @@ class ModernTCN(nn.Module):
         x = self.forward_feature(x,te)
         x = self.head(x)
         # de-instance norm
+        if te is None:
+            te = torch.zeros(x.size(0), self.time_dim, x.size(-1)).to(x.device)
         if self.revin:
             x = x.permute(0, 2, 1)
             time_out = self.time_proj(te)
@@ -412,7 +446,19 @@ class Model(nn.Module):
             x = res + trend
             x = x.permute(0, 2, 1)
         else:
-            x = x.permute(0, 2, 1)
+            # Handle tuple output by taking first element
+            if isinstance(x, tuple):
+                x = x[0]  # Take main output from first position
+            # Add dimension check and handling
+            if x.dim() == 2:  # If input is 2D [batch, features]
+                x = x.unsqueeze(-1)  # Convert to 3D [batch, features, 1]
+            
+            x = x.permute(0, 2, 1)  # Now safe for 3D tensors
             x = self.model(x, x_mark_enc)
+            
+            # Ensure output maintains 3 dimensions
+            if x.dim() == 2:
+                x = x.unsqueeze(-1)
+                
             x = x.permute(0, 2, 1)
         return x

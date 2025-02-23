@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import math
+import shap
 from layers.Invertible import RevIN
 from layers.ModernTCN_Layer import series_decomp, Flatten_Head
 
@@ -232,6 +233,8 @@ class ModernTCN(nn.Module):
         self.patch_size = patch_size
         self.patch_stride = patch_stride
         self.downsample_ratio = downsample_ratio
+        self.attention_maps = None
+        self.register_hooks()
 
         if freq == 'h':
             time_feature_num = 4
@@ -297,6 +300,19 @@ class ModernTCN(nn.Module):
     def up_sample(self, x, upsample_ratio):
         _, _, _, N = x.shape
         return F.upsample(x, size=N, scale_factor=upsample_ratio, mode='bilinear')
+
+    def register_hooks(self):
+        def attention_hook(module, input, output):
+            self.attention_maps = output[1]  # Store attention weights
+            
+        # Register hooks on attention layers
+        for name, module in self.named_modules():
+            if 'attention' in name.lower():
+                module.register_forward_hook(attention_hook)
+    
+    def get_feature_importance(self, x):
+        # SHAP-based feature importance
+        return shap.DeepExplainer(self).shap_values(x)
 
     def forward_feature(self, x, te=None):
 
