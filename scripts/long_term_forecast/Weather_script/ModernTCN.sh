@@ -43,7 +43,7 @@ python -u run.py \
     --itr 1 \
     --train_epochs 100 \
     --batch_size 256 \
-    --patience 20 \
+    --patience 3 \
     --learning_rate 0.0001 \
     --des Exp | tee -a ./log/ModernTCN/weather/$seq_len.txt
 
@@ -76,7 +76,7 @@ python -u run.py \
     --itr 1 \
     --train_epochs 100 \
     --batch_size 256 \
-    --patience 20 \
+    --patience 3 \
     --learning_rate 0.0001 \
     --des Exp | tee -a ./log/ModernTCN/weather/$seq_len.txt
 
@@ -109,7 +109,7 @@ python -u run.py \
     --itr 1 \
     --train_epochs 100 \
     --batch_size 512 \
-    --patience 20 \
+    --patience 3 \
     --learning_rate 0.0001 \
     --des Exp | tee -a ./log/ModernTCN/weather/$seq_len.txt
 
@@ -142,6 +142,6 @@ python -u run.py \
     --itr 1 \
     --train_epochs 100 \
     --batch_size 512 \
-    --patience 20 \
+    --patience 3 \
     --learning_rate 0.0001 \
     --des Exp | tee -a ./log/ModernTCN/weather/$seq_len.txt

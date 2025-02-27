@@ -1,0 +1,564 @@
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh1_96_96         Model:              ModernTCN           
+
+[1mData Loader[0m
+  Data:               ETTh1               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           96                  Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.3                 
+  Embed:              timeF               Activation:         gelu                
+  Output Attention:   0                   
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         512                 
+  Patience:           20                  Learning Rate:      0.0001              
+  Des:                Exp                 Loss:               mse                 
+  Lradj:              type3               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            0                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use CPU
+>>>>>>>start training : long_term_forecast_ETTh1_96_96_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021>>>>>>>>>>>>>>>>>>>>>>>>>>
+Parameters: 291204
+train 8449
+val 2785
+test 2785
+Epoch: 1 cost time: 142.12832760810852
+Epoch: 1, Steps: 16 | Train Loss: 0.5521888 Vali Loss: 0.8659816 Test Loss: 0.5049511
+Validation loss decreased (inf --> 0.865982).  Saving model ...
+Updating learning rate to 0.0001
+Epoch: 2 cost time: 136.61042618751526
+Epoch: 2, Steps: 16 | Train Loss: 0.4319706 Vali Loss: 0.7693518 Test Loss: 0.4425766
+Validation loss decreased (0.865982 --> 0.769352).  Saving model ...
+Updating learning rate to 0.0001
+Epoch: 3 cost time: 136.09119200706482
+Epoch: 3, Steps: 16 | Train Loss: 0.3994988 Vali Loss: 0.7406093 Test Loss: 0.4217332
+Validation loss decreased (0.769352 --> 0.740609).  Saving model ...
+Updating learning rate to 0.0001
+Epoch: 4 cost time: 178.3825318813324
+Epoch: 4, Steps: 16 | Train Loss: 0.3841649 Vali Loss: 0.7281300 Test Loss: 0.4096423
+Validation loss decreased (0.740609 --> 0.728130).  Saving model ...
+Updating learning rate to 9e-05
+Epoch: 5 cost time: 153.20294284820557
+Epoch: 5, Steps: 16 | Train Loss: 0.3772618 Vali Loss: 0.7212903 Test Loss: 0.4028774
+Validation loss decreased (0.728130 --> 0.721290).  Saving model ...
+Updating learning rate to 8.1e-05
+Epoch: 6 cost time: 146.94735765457153
+Epoch: 6, Steps: 16 | Train Loss: 0.3722453 Vali Loss: 0.7168564 Test Loss: 0.3988821
+Validation loss decreased (0.721290 --> 0.716856).  Saving model ...
+Updating learning rate to 7.290000000000001e-05
+Epoch: 7 cost time: 150.82913541793823
+Epoch: 7, Steps: 16 | Train Loss: 0.3692743 Vali Loss: 0.7136040 Test Loss: 0.3958225
+Validation loss decreased (0.716856 --> 0.713604).  Saving model ...
+Updating learning rate to 6.561e-05
+Epoch: 8 cost time: 149.7940812110901
+Epoch: 8, Steps: 16 | Train Loss: 0.3654614 Vali Loss: 0.7129786 Test Loss: 0.3939803
+Validation loss decreased (0.713604 --> 0.712979).  Saving model ...
+Updating learning rate to 5.904900000000001e-05
+Epoch: 9 cost time: 148.9260914325714
+Epoch: 9, Steps: 16 | Train Loss: 0.3650249 Vali Loss: 0.7106321 Test Loss: 0.3924782
+Validation loss decreased (0.712979 --> 0.710632).  Saving model ...
+Updating learning rate to 5.3144100000000005e-05
+Epoch: 10 cost time: 149.1477153301239
+Epoch: 10, Steps: 16 | Train Loss: 0.3638084 Vali Loss: 0.7090826 Test Loss: 0.3915584
+Validation loss decreased (0.710632 --> 0.709083).  Saving model ...
+Updating learning rate to 4.782969000000001e-05
+Epoch: 11 cost time: 105.01634740829468
+Epoch: 11, Steps: 16 | Train Loss: 0.3621423 Vali Loss: 0.7080798 Test Loss: 0.3905739
+Validation loss decreased (0.709083 --> 0.708080).  Saving model ...
+Updating learning rate to 4.304672100000001e-05
+Epoch: 12 cost time: 108.97960186004639
+Epoch: 12, Steps: 16 | Train Loss: 0.3620923 Vali Loss: 0.7081246 Test Loss: 0.3898384
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 3.874204890000001e-05
+Epoch: 13 cost time: 116.5552716255188
+Epoch: 13, Steps: 16 | Train Loss: 0.3607616 Vali Loss: 0.7064514 Test Loss: 0.3893461
+Validation loss decreased (0.708080 --> 0.706451).  Saving model ...
+Updating learning rate to 3.486784401000001e-05
+Epoch: 14 cost time: 105.3970742225647
+Epoch: 14, Steps: 16 | Train Loss: 0.3596209 Vali Loss: 0.7060935 Test Loss: 0.3888637
+Validation loss decreased (0.706451 --> 0.706093).  Saving model ...
+Updating learning rate to 3.138105960900001e-05
+Epoch: 15 cost time: 110.05971622467041
+Epoch: 15, Steps: 16 | Train Loss: 0.3606813 Vali Loss: 0.7051281 Test Loss: 0.3884926
+Validation loss decreased (0.706093 --> 0.705128).  Saving model ...
+Updating learning rate to 2.824295364810001e-05
+Epoch: 16 cost time: 110.39603662490845
+Epoch: 16, Steps: 16 | Train Loss: 0.3605381 Vali Loss: 0.7055417 Test Loss: 0.3880890
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 2.541865828329001e-05
+Epoch: 17 cost time: 114.125168800354
+Epoch: 17, Steps: 16 | Train Loss: 0.3596446 Vali Loss: 0.7057982 Test Loss: 0.3880326
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 2.287679245496101e-05
+Epoch: 18 cost time: 109.26956391334534
+Epoch: 18, Steps: 16 | Train Loss: 0.3605793 Vali Loss: 0.7046659 Test Loss: 0.3875726
+Validation loss decreased (0.705128 --> 0.704666).  Saving model ...
+Updating learning rate to 2.0589113209464907e-05
+Epoch: 19 cost time: 110.5754406452179
+Epoch: 19, Steps: 16 | Train Loss: 0.3592254 Vali Loss: 0.7046224 Test Loss: 0.3874863
+Validation loss decreased (0.704666 --> 0.704622).  Saving model ...
+Updating learning rate to 1.8530201888518416e-05
+Epoch: 20 cost time: 112.92966198921204
+Epoch: 20, Steps: 16 | Train Loss: 0.3594299 Vali Loss: 0.7043466 Test Loss: 0.3872284
+Validation loss decreased (0.704622 --> 0.704347).  Saving model ...
+Updating learning rate to 1.6677181699666577e-05
+Epoch: 21 cost time: 104.60077095031738
+Epoch: 21, Steps: 16 | Train Loss: 0.3597551 Vali Loss: 0.7042629 Test Loss: 0.3871398
+Validation loss decreased (0.704347 --> 0.704263).  Saving model ...
+Updating learning rate to 1.5009463529699919e-05
+Epoch: 22 cost time: 104.17778730392456
+Epoch: 22, Steps: 16 | Train Loss: 0.3589434 Vali Loss: 0.7036620 Test Loss: 0.3870425
+Validation loss decreased (0.704263 --> 0.703662).  Saving model ...
+Updating learning rate to 1.3508517176729929e-05
+Epoch: 23 cost time: 103.61957812309265
+Epoch: 23, Steps: 16 | Train Loss: 0.3584759 Vali Loss: 0.7036243 Test Loss: 0.3868524
+Validation loss decreased (0.703662 --> 0.703624).  Saving model ...
+Updating learning rate to 1.2157665459056936e-05
+Epoch: 24 cost time: 103.5393807888031
+Epoch: 24, Steps: 16 | Train Loss: 0.3600347 Vali Loss: 0.7037874 Test Loss: 0.3867687
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 1.0941898913151242e-05
+Epoch: 25 cost time: 109.46639347076416
+Epoch: 25, Steps: 16 | Train Loss: 0.3580619 Vali Loss: 0.7036107 Test Loss: 0.3866922
+Validation loss decreased (0.703624 --> 0.703611).  Saving model ...
+Updating learning rate to 9.847709021836118e-06
+Epoch: 26 cost time: 117.03044891357422
+Epoch: 26, Steps: 16 | Train Loss: 0.3583467 Vali Loss: 0.7033479 Test Loss: 0.3866294
+Validation loss decreased (0.703611 --> 0.703348).  Saving model ...
+Updating learning rate to 8.862938119652508e-06
+Epoch: 27 cost time: 144.31499314308167
+Epoch: 27, Steps: 16 | Train Loss: 0.3590682 Vali Loss: 0.7034221 Test Loss: 0.3864750
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 7.976644307687255e-06
+Epoch: 28 cost time: 127.4367139339447
+Epoch: 28, Steps: 16 | Train Loss: 0.3579477 Vali Loss: 0.7034599 Test Loss: 0.3864050
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 7.178979876918531e-06
+Epoch: 29 cost time: 108.1137466430664
+Epoch: 29, Steps: 16 | Train Loss: 0.3577621 Vali Loss: 0.7032033 Test Loss: 0.3863811
+Validation loss decreased (0.703348 --> 0.703203).  Saving model ...
+Updating learning rate to 6.4610818892266776e-06
+Epoch: 30 cost time: 104.52403330802917
+Epoch: 30, Steps: 16 | Train Loss: 0.3581708 Vali Loss: 0.7032481 Test Loss: 0.3862897
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 5.8149737003040096e-06
+Epoch: 31 cost time: 105.99134945869446
+Epoch: 31, Steps: 16 | Train Loss: 0.3575979 Vali Loss: 0.7030608 Test Loss: 0.3863001
+Validation loss decreased (0.703203 --> 0.703061).  Saving model ...
+Updating learning rate to 5.23347633027361e-06
+Epoch: 32 cost time: 105.55674076080322
+Epoch: 32, Steps: 16 | Train Loss: 0.3580675 Vali Loss: 0.7030200 Test Loss: 0.3862545
+Validation loss decreased (0.703061 --> 0.703020).  Saving model ...
+Updating learning rate to 4.710128697246249e-06
+Epoch: 33 cost time: 107.27824521064758
+Epoch: 33, Steps: 16 | Train Loss: 0.3581938 Vali Loss: 0.7029650 Test Loss: 0.3862038
+Validation loss decreased (0.703020 --> 0.702965).  Saving model ...
+Updating learning rate to 4.239115827521624e-06
+Epoch: 34 cost time: 105.92958688735962
+Epoch: 34, Steps: 16 | Train Loss: 0.3580508 Vali Loss: 0.7028980 Test Loss: 0.3861403
+Validation loss decreased (0.702965 --> 0.702898).  Saving model ...
+Updating learning rate to 3.815204244769462e-06
+Epoch: 35 cost time: 113.32128930091858
+Epoch: 35, Steps: 16 | Train Loss: 0.3580742 Vali Loss: 0.7027916 Test Loss: 0.3861276
+Validation loss decreased (0.702898 --> 0.702792).  Saving model ...
+Updating learning rate to 3.4336838202925152e-06
+Epoch: 36 cost time: 107.86999773979187
+Epoch: 36, Steps: 16 | Train Loss: 0.3566935 Vali Loss: 0.7027160 Test Loss: 0.3861364
+Validation loss decreased (0.702792 --> 0.702716).  Saving model ...
+Updating learning rate to 3.090315438263264e-06
+Epoch: 37 cost time: 106.55054664611816
+Epoch: 37, Steps: 16 | Train Loss: 0.3584873 Vali Loss: 0.7027922 Test Loss: 0.3861099
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 2.7812838944369375e-06
+Epoch: 38 cost time: 219.00126767158508
+Epoch: 38, Steps: 16 | Train Loss: 0.3571433 Vali Loss: 0.7028185 Test Loss: 0.3860558
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 2.503155504993244e-06
+Epoch: 39 cost time: 105.43485713005066
+Epoch: 39, Steps: 16 | Train Loss: 0.3578613 Vali Loss: 0.7027906 Test Loss: 0.3860429
+EarlyStopping counter: 3 out of 20
+Updating learning rate to 2.2528399544939195e-06
+Epoch: 40 cost time: 106.2592089176178
+Epoch: 40, Steps: 16 | Train Loss: 0.3580846 Vali Loss: 0.7027713 Test Loss: 0.3860314
+EarlyStopping counter: 4 out of 20
+Updating learning rate to 2.0275559590445276e-06
+Epoch: 41 cost time: 101.03457617759705
+Epoch: 41, Steps: 16 | Train Loss: 0.3582096 Vali Loss: 0.7027138 Test Loss: 0.3860024
+Validation loss decreased (0.702716 --> 0.702714).  Saving model ...
+Updating learning rate to 1.8248003631400751e-06
+Epoch: 42 cost time: 101.684818983078
+Epoch: 42, Steps: 16 | Train Loss: 0.3576391 Vali Loss: 0.7026631 Test Loss: 0.3860010
+Validation loss decreased (0.702714 --> 0.702663).  Saving model ...
+Updating learning rate to 1.6423203268260676e-06
+Epoch: 43 cost time: 104.50108098983765
+Epoch: 43, Steps: 16 | Train Loss: 0.3574021 Vali Loss: 0.7026659 Test Loss: 0.3859792
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 1.4780882941434609e-06
+Epoch: 44 cost time: 105.79601788520813
+Epoch: 44, Steps: 16 | Train Loss: 0.3572219 Vali Loss: 0.7026164 Test Loss: 0.3859731
+Validation loss decreased (0.702663 --> 0.702616).  Saving model ...
+Updating learning rate to 1.3302794647291146e-06
+Epoch: 45 cost time: 104.93405175209045
+Epoch: 45, Steps: 16 | Train Loss: 0.3576981 Vali Loss: 0.7025724 Test Loss: 0.3859644
+Validation loss decreased (0.702616 --> 0.702572).  Saving model ...
+Updating learning rate to 1.1972515182562034e-06
+Epoch: 46 cost time: 105.45773124694824
+Epoch: 46, Steps: 16 | Train Loss: 0.3579579 Vali Loss: 0.7025575 Test Loss: 0.3859581
+Validation loss decreased (0.702572 --> 0.702558).  Saving model ...
+Updating learning rate to 1.077526366430583e-06
+Epoch: 47 cost time: 105.10868453979492
+Epoch: 47, Steps: 16 | Train Loss: 0.3571399 Vali Loss: 0.7025514 Test Loss: 0.3859455
+Validation loss decreased (0.702558 --> 0.702551).  Saving model ...
+Updating learning rate to 9.697737297875248e-07
+Epoch: 48 cost time: 102.32472443580627
+Epoch: 48, Steps: 16 | Train Loss: 0.3579634 Vali Loss: 0.7025399 Test Loss: 0.3859384
+Validation loss decreased (0.702551 --> 0.702540).  Saving model ...
+Updating learning rate to 8.727963568087723e-07
+Epoch: 49 cost time: 100.91502237319946
+Epoch: 49, Steps: 16 | Train Loss: 0.3580159 Vali Loss: 0.7025460 Test Loss: 0.3859364
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 7.855167211278951e-07
+Epoch: 50 cost time: 101.1473937034607
+Epoch: 50, Steps: 16 | Train Loss: 0.3568597 Vali Loss: 0.7025181 Test Loss: 0.3859394
+Validation loss decreased (0.702540 --> 0.702518).  Saving model ...
+Updating learning rate to 7.069650490151056e-07
+Epoch: 51 cost time: 103.17759084701538
+Epoch: 51, Steps: 16 | Train Loss: 0.3574526 Vali Loss: 0.7024956 Test Loss: 0.3859254
+Validation loss decreased (0.702518 --> 0.702496).  Saving model ...
+Updating learning rate to 6.36268544113595e-07
+Epoch: 52 cost time: 101.84244275093079
+Epoch: 52, Steps: 16 | Train Loss: 0.3566173 Vali Loss: 0.7025180 Test Loss: 0.3859186
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 5.726416897022355e-07
+Epoch: 53 cost time: 101.58374500274658
+Epoch: 53, Steps: 16 | Train Loss: 0.3580797 Vali Loss: 0.7025072 Test Loss: 0.3859085
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 5.15377520732012e-07
+Epoch: 54 cost time: 101.72157073020935
+Epoch: 54, Steps: 16 | Train Loss: 0.3574768 Vali Loss: 0.7024943 Test Loss: 0.3859054
+Validation loss decreased (0.702496 --> 0.702494).  Saving model ...
+Updating learning rate to 4.6383976865881085e-07
+Epoch: 55 cost time: 102.26983594894409
+Epoch: 55, Steps: 16 | Train Loss: 0.3573870 Vali Loss: 0.7025079 Test Loss: 0.3858993
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 4.174557917929298e-07
+Epoch: 56 cost time: 102.25677394866943
+Epoch: 56, Steps: 16 | Train Loss: 0.3572934 Vali Loss: 0.7024843 Test Loss: 0.3858966
+Validation loss decreased (0.702494 --> 0.702484).  Saving model ...
+Updating learning rate to 3.7571021261363677e-07
+Epoch: 57 cost time: 102.17122793197632
+Epoch: 57, Steps: 16 | Train Loss: 0.3573012 Vali Loss: 0.7024813 Test Loss: 0.3858893
+Validation loss decreased (0.702484 --> 0.702481).  Saving model ...
+Updating learning rate to 3.381391913522731e-07
+Epoch: 58 cost time: 100.65053939819336
+Epoch: 58, Steps: 16 | Train Loss: 0.3570098 Vali Loss: 0.7024848 Test Loss: 0.3858925
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 3.043252722170458e-07
+Epoch: 59 cost time: 104.8474452495575
+Epoch: 59, Steps: 16 | Train Loss: 0.3574452 Vali Loss: 0.7024910 Test Loss: 0.3858895
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 2.7389274499534124e-07
+Epoch: 60 cost time: 106.6413938999176
+Epoch: 60, Steps: 16 | Train Loss: 0.3582536 Vali Loss: 0.7024914 Test Loss: 0.3858918
+EarlyStopping counter: 3 out of 20
+Updating learning rate to 2.465034704958071e-07
+Epoch: 61 cost time: 102.74475002288818
+Epoch: 61, Steps: 16 | Train Loss: 0.3578949 Vali Loss: 0.7024818 Test Loss: 0.3858886
+EarlyStopping counter: 4 out of 20
+Updating learning rate to 2.218531234462264e-07
+Epoch: 62 cost time: 103.13163447380066
+Epoch: 62, Steps: 16 | Train Loss: 0.3567168 Vali Loss: 0.7024884 Test Loss: 0.3858799
+EarlyStopping counter: 5 out of 20
+Updating learning rate to 1.9966781110160376e-07
+Epoch: 63 cost time: 101.9339656829834
+Epoch: 63, Steps: 16 | Train Loss: 0.3571490 Vali Loss: 0.7024689 Test Loss: 0.3858786
+Validation loss decreased (0.702481 --> 0.702469).  Saving model ...
+Updating learning rate to 1.797010299914434e-07
+Epoch: 64 cost time: 102.00356101989746
+Epoch: 64, Steps: 16 | Train Loss: 0.3580871 Vali Loss: 0.7024761 Test Loss: 0.3858825
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 1.6173092699229907e-07
+Epoch: 65 cost time: 101.45050692558289
+Epoch: 65, Steps: 16 | Train Loss: 0.3577372 Vali Loss: 0.7024820 Test Loss: 0.3858764
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 1.4555783429306916e-07
+Epoch: 66 cost time: 101.74717450141907
+Epoch: 66, Steps: 16 | Train Loss: 0.3563520 Vali Loss: 0.7024755 Test Loss: 0.3858803
+EarlyStopping counter: 3 out of 20
+Updating learning rate to 1.3100205086376224e-07
+Epoch: 67 cost time: 102.29047632217407
+Epoch: 67, Steps: 16 | Train Loss: 0.3574947 Vali Loss: 0.7024733 Test Loss: 0.3858705
+EarlyStopping counter: 4 out of 20
+Updating learning rate to 1.1790184577738603e-07
+Epoch: 68 cost time: 101.64467287063599
+Epoch: 68, Steps: 16 | Train Loss: 0.3574261 Vali Loss: 0.7024674 Test Loss: 0.3858720
+Validation loss decreased (0.702469 --> 0.702467).  Saving model ...
+Updating learning rate to 1.0611166119964742e-07
+Epoch: 69 cost time: 102.47008180618286
+Epoch: 69, Steps: 16 | Train Loss: 0.3574846 Vali Loss: 0.7024842 Test Loss: 0.3858739
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 9.550049507968268e-08
+Epoch: 70 cost time: 101.08845639228821
+Epoch: 70, Steps: 16 | Train Loss: 0.3569464 Vali Loss: 0.7024790 Test Loss: 0.3858701
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 8.595044557171442e-08
+Epoch: 71 cost time: 102.96986055374146
+Epoch: 71, Steps: 16 | Train Loss: 0.3578970 Vali Loss: 0.7024641 Test Loss: 0.3858733
+Validation loss decreased (0.702467 --> 0.702464).  Saving model ...
+Updating learning rate to 7.735540101454298e-08
+Epoch: 72 cost time: 102.2503969669342
+Epoch: 72, Steps: 16 | Train Loss: 0.3587509 Vali Loss: 0.7024598 Test Loss: 0.3858708
+Validation loss decreased (0.702464 --> 0.702460).  Saving model ...
+Updating learning rate to 6.961986091308869e-08
+Epoch: 73 cost time: 102.99846005439758
+Epoch: 73, Steps: 16 | Train Loss: 0.3583144 Vali Loss: 0.7024671 Test Loss: 0.3858709
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 6.265787482177981e-08
+Epoch: 74 cost time: 114.8100438117981
+Epoch: 74, Steps: 16 | Train Loss: 0.3573864 Vali Loss: 0.7024563 Test Loss: 0.3858734
+Validation loss decreased (0.702460 --> 0.702456).  Saving model ...
+Updating learning rate to 5.639208733960184e-08
+Epoch: 75 cost time: 104.96803784370422
+Epoch: 75, Steps: 16 | Train Loss: 0.3579109 Vali Loss: 0.7024618 Test Loss: 0.3858739
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 5.075287860564165e-08
+Epoch: 76 cost time: 131.21553349494934
+Epoch: 76, Steps: 16 | Train Loss: 0.3573126 Vali Loss: 0.7024532 Test Loss: 0.3858724
+Validation loss decreased (0.702456 --> 0.702453).  Saving model ...
+Updating learning rate to 4.567759074507749e-08
+Epoch: 77 cost time: 111.2197802066803
+Epoch: 77, Steps: 16 | Train Loss: 0.3576153 Vali Loss: 0.7024608 Test Loss: 0.3858688
+EarlyStopping counter: 1 out of 20
+Updating learning rate to 4.1109831670569744e-08
+Epoch: 78 cost time: 113.81931567192078
+Epoch: 78, Steps: 16 | Train Loss: 0.3579250 Vali Loss: 0.7024612 Test Loss: 0.3858729
+EarlyStopping counter: 2 out of 20
+Updating learning rate to 3.6998848503512764e-08
+Epoch: 79 cost time: 100.92181777954102
+Epoch: 79, Steps: 16 | Train Loss: 0.3583407 Vali Loss: 0.7024715 Test Loss: 0.3858697
+EarlyStopping counter: 3 out of 20
+Updating learning rate to 3.3298963653161496e-08
+Epoch: 80 cost time: 101.55792450904846
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh1_96_96         Model:              ModernTCN           
+
+[1mData Loader[0m
+  Data:               ETTh1               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           96                  Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.3                 
+  Embed:              timeF               Activation:         gelu                
+  Output Attention:   0                   
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         512                 
+  Patience:           20                  Learning Rate:      0.0001              
+  Des:                Exp                 Loss:               mse                 
+  Lradj:              type3               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            0                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use CPU
+>>>>>>>start training : long_term_forecast_ETTh1_96_96_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021>>>>>>>>>>>>>>>>>>>>>>>>>>
+Parameters: 291204
+>>>>>>>testing : long_term_forecast_ETTh1_96_96_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+train 8449
+test 2785
+test shape: (2785, 96, 7) (2785, 96, 7)
+test shape: (2785, 96, 7) (2785, 96, 7)
+mse:0.7977924346923828, mae:0.5915346741676331
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh1_96_192        Model:              ModernTCN           
+
+[1mData Loader[0m
+  Data:               ETTh1               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           192                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.3                 
+  Embed:              timeF               Activation:         gelu                
+  Output Attention:   0                   
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         512                 
+  Patience:           20                  Learning Rate:      0.0001              
+  Des:                Exp                 Loss:               mse                 
+  Lradj:              type3               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            0                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use CPU
+>>>>>>>start training : long_term_forecast_ETTh1_96_192_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021>>>>>>>>>>>>>>>>>>>>>>>>>>
+Parameters: 438756
+>>>>>>>testing : long_term_forecast_ETTh1_96_192_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+train 8353
+test 2689
+test shape: (2689, 192, 7) (2689, 192, 7)
+test shape: (2689, 192, 7) (2689, 192, 7)
+mse:0.8239287734031677, mae:0.6079373359680176
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh1_96_336        Model:              ModernTCN           
+
+[1mData Loader[0m
+  Data:               ETTh1               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           336                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.3                 
+  Embed:              timeF               Activation:         gelu                
+  Output Attention:   0                   
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         512                 
+  Patience:           20                  Learning Rate:      0.0001              
+  Des:                Exp                 Loss:               mse                 
+  Lradj:              type3               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            0                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use CPU
+>>>>>>>start training : long_term_forecast_ETTh1_96_336_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021>>>>>>>>>>>>>>>>>>>>>>>>>>
+Parameters: 660084
+>>>>>>>testing : long_term_forecast_ETTh1_96_336_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+train 8209
+test 2545
+test shape: (2545, 336, 7) (2545, 336, 7)
+test shape: (2545, 336, 7) (2545, 336, 7)
+mse:0.8232966661453247, mae:0.6164972186088562
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           ETTh1_96_720        Model:              ModernTCN           
+
+[1mData Loader[0m
+  Data:               ETTh1               Root Path:          ./dataset/ETT-small/
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           720                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.3                 
+  Embed:              timeF               Activation:         gelu                
+  Output Attention:   0                   
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         512                 
+  Patience:           20                  Learning Rate:      0.0001              
+  Des:                Exp                 Loss:               mse                 
+  Lradj:              type3               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            0                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use CPU
+>>>>>>>start training : long_term_forecast_ETTh1_96_720_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021>>>>>>>>>>>>>>>>>>>>>>>>>>
+Parameters: 1250292
+>>>>>>>testing : long_term_forecast_ETTh1_96_720_ModernTCN_ETTh1_ftM_ttHD_rda4_rdb1_ksize5_beta0.4_freqh_ebtimeF_bs512_Exp_2021<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+train 7825
+test 2161
+test shape: (2161, 720, 7) (2161, 720, 7)
+test shape: (2161, 720, 7) (2161, 720, 7)
+mse:0.8132901787757874, mae:0.6286813616752625
