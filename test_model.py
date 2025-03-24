@@ -286,6 +286,7 @@ def main():
         'All Features': list(range(5))   # all features
     }
     ablation_results = ablation_study(model, X_test, y_test, feature_groups)
+    print(ablation_results)
 
 if __name__ == '__main__':
     main()
