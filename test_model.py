@@ -6,7 +6,62 @@ import torch.optim as optim
 from sklearn.preprocessing import MinMaxScaler
 from scipy.fftpack import fft, ifft
 import shap # Explicitly import DeepExplainer
+from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import lime
+import lime.lime_tabular
+
+def explain_with_lime(model, X_test, feature_names, num_features=5):
+    """
+    Explain individual predictions using LIME.
+    :param model: Trained model.
+    :param X_test: Test data (n_samples, n_features).
+    :param feature_names: List of feature names.
+    :param num_features: Number of features to display in the explanation.
+    """
+    # Wrap the model to return a single-dimensional output
+    def model_wrapper(x):
+        x_tensor = torch.FloatTensor(x)
+        predictions = model(x_tensor)  # Shape: (n_samples, horizon, output_dim)
+        return predictions.mean(dim=1).detach().numpy()  # Aggregate across horizon
+
+    # Create LIME explainer
+    explainer = lime.lime_tabular.LimeTabularExplainer(
+        X_test, feature_names=feature_names, mode='regression'
+    )
+
+    # Explain a single instance
+    instance_idx = 0  # Explain the first instance
+    explanation = explainer.explain_instance(X_test[instance_idx], model_wrapper, num_features=num_features)
+
+    # Print explanation in text format
+    print("LIME Explanation:")
+    for feature, weight in explanation.as_list():
+        print(f"{feature}: {weight}")
+
+def visualize_tsne(model, X_test):
+    """
+    Visualize feature embeddings using t-SNE.
+    :param model: Trained model.
+    :param X_test: Test data (n_samples, look_back, n_features).
+    """
+    # Flatten the input tensor: [n_samples, look_back, n_features] -> [n_samples, look_back * n_features]
+    X_test_flat = X_test.view(X_test.size(0), -1)
+
+    # Pass the flattened input through the first linear layer to get feature embeddings
+    feature_embeddings = model.linear1(X_test_flat).detach().numpy()
+
+    # Apply t-SNE to reduce dimensionality to 2D
+    tsne = TSNE(n_components=2, perplexity=30, random_state=42)
+    embeddings_2d = tsne.fit_transform(feature_embeddings)
+
+    # Plot the t-SNE visualization
+    plt.figure(figsize=(8, 6))
+    plt.scatter(embeddings_2d[:, 0], embeddings_2d[:, 1], alpha=0.6)
+    plt.title('t-SNE Visualization of Feature Embeddings')
+    plt.xlabel('t-SNE Component 1')
+    plt.ylabel('t-SNE Component 2')
+    plt.show()
 
 # Load ETTh Dataset
 def load_etth_dataset(file_path):
@@ -95,6 +150,12 @@ def explain_model(model, X_test):
     explainer = shap.KernelExplainer(model_wrapper, X_test_np_flat[:100])  # Use a subset for faster computation
     shap_values = explainer.shap_values(X_test_np_flat[:50])  # Explain first 10 samples
 
+    # Generate feature names for LIME
+    feature_names = [f't{i+1}_f{j+1}' for i in range(look_back) for j in range(X_test_np.shape[2])]
+
+    # Explain predictions using LIME
+    explain_with_lime(model, X_test_np_flat[:10], feature_names)
+
     # Handle single-output and multi-output models
     if isinstance(shap_values, list):
         # Multi-output model: shap_values is a list of arrays
@@ -121,6 +182,31 @@ def explain_model(model, X_test):
         # Visualize SHAP values
         shap.summary_plot(shap_values_flat, X_test_np_flat[:50], feature_names=feature_names)
 
+def ablation_study(model, X_test, y_test, feature_groups):
+    """
+    Perform ablation studies by removing specific feature groups.
+    :param model: Trained model.
+    :param X_test: Test data (n_samples, look_back, n_features).
+    :param y_test: Test labels (n_samples, horizon, output_dim).
+    :param feature_groups: Dictionary of feature groups to ablate.
+    """
+    results = {}
+    for group_name, feature_indices in feature_groups.items():
+        # Create a copy of the test data and remove the feature group
+        X_test_ablated = X_test.clone()
+        X_test_ablated[:, :, feature_indices] = 0  # Set feature values to 0
+
+        # Evaluate the model on the ablated data
+        with torch.no_grad():
+            predictions = model(X_test_ablated)
+            mse = nn.MSELoss()(predictions, y_test).item()
+
+        # Store the results
+        results[group_name] = mse
+        print(f'Ablation: {group_name}, Test MSE: {mse:.4f}')
+
+    return results
+
 # Main Function
 # Cyclic Feature Extraction using FFT for each time step
 def extract_cyclic_features(time_series, window_size=24, top_freq=5):
@@ -141,6 +227,7 @@ def prepare_dataset(data, look_back=24, horizon=12):
         y.append(data[i+look_back:i+look_back+horizon])
     return np.array(X), np.array(y)
 
+# Main Function
 # Main Function
 # Main Function
 # Main Function
@@ -188,6 +275,17 @@ def main():
 
     # Explain Model
     explain_model(model, X_test)
+
+    # t-SNE Visualization
+    visualize_tsne(model, X_test)
+
+    # Ablation Studies
+    feature_groups = {
+        'Time Features': [0, 1, 2, 3],  # hour, day, month, season
+        'Cyclic Feature': [4],           # cyclic
+        'All Features': list(range(5))   # all features
+    }
+    ablation_results = ablation_study(model, X_test, y_test, feature_groups)
 
 if __name__ == '__main__':
     main()
