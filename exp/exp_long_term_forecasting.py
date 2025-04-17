@@ -1,3 +1,4 @@
+import json
 from data_provider.data_factory import data_provider
 from torch.utils.data import Subset, DataLoader
 from torch.optim import lr_scheduler
@@ -14,6 +15,101 @@ import numpy as np
 import shap
 import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plot_predictions(actual, predicted, timestamps=None, title="Prediction vs Actual", save_path=None):
+    """
+    Plot actual vs predicted values with professional formatting
+    
+    Args:
+        actual: numpy array of shape [seq_len]
+        predicted: numpy array of shape [seq_len] 
+        timestamps: optional time axis labels
+        title: plot title
+        save_path: where to save the image (None to display)
+    """
+    plt.figure(figsize=(12, 6))
+    
+    if timestamps is None:
+        plt.plot(actual, label='Actual', color='#1f77b4', linewidth=2)
+        plt.plot(predicted, '--', label='Predicted', color='#ff7f0e', linewidth=2)
+    else:
+        plt.plot(timestamps, actual, label='Actual', color='#1f77b4', linewidth=2)
+        plt.plot(timestamps, predicted, '--', label='Predicted', color='#ff7f0e', linewidth=2)
+    
+    plt.fill_between(
+        range(len(actual)),
+        actual - 0.2*np.abs(actual),
+        actual + 0.2*np.abs(actual),
+        color='gray',
+        alpha=0.2,
+        label='±20% Error Band'
+    )
+    
+    plt.title(title, fontsize=14)
+    plt.xlabel('Time Steps', fontsize=12)
+    plt.ylabel('Target Value', fontsize=12)
+    plt.legend(fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight', dpi=300)
+        plt.close()
+    else:
+        plt.show()
+
+def plot_multivariate_predictions(actual, predicted, feature_names=None, 
+                                samples_to_plot=3, timesteps_to_plot=100,
+                                title="Multivariate Predictions", save_path=None):
+    """
+    Plot actual vs predicted values for multivariate time series
+    
+    Args:
+        actual: numpy array of shape [timesteps, n_features]
+        predicted: numpy array of shape [timesteps, n_features]
+        feature_names: list of feature names
+        samples_to_plot: number of random samples to visualize
+        timesteps_to_plot: how many timesteps to show per sample
+        title: plot title
+        save_path: where to save the image
+    """
+    if feature_names is None:
+        feature_names = [f'Var_{i}' for i in range(actual.shape[1])]
+    
+    n_features = actual.shape[1]
+    
+    # Create figure with subplots
+    fig, axes = plt.subplots(n_features, 1, figsize=(15, 2*n_features), sharex=True)
+    if n_features == 1:
+        axes = [axes]  # Ensure axes is always iterable
+    
+    # Plot each feature
+    for i, (ax, feat_name) in enumerate(zip(axes, feature_names)):
+        # Select random starting point
+        start_idx = np.random.randint(0, actual.shape[0] - timesteps_to_plot)
+        end_idx = start_idx + timesteps_to_plot
+        
+        # Plot actual and predicted
+        ax.plot(actual[start_idx:end_idx, i], label='Actual', color='#1f77b4', alpha=0.8)
+        ax.plot(predicted[start_idx:end_idx, i], '--', label='Predicted', color='#ff7f0e', alpha=0.8)
+        
+        ax.set_ylabel(feat_name, fontsize=10)
+        ax.grid(True, linestyle=':', alpha=0.6)
+        
+        if i == 0:
+            ax.legend(loc='upper right')
+            ax.set_title(title, fontsize=12)
+    
+    plt.xlabel('Time Steps', fontsize=10)
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight', dpi=300)
+        plt.close()
+    else:
+        plt.show()
+  
 
 warnings.filterwarnings('ignore')
 
@@ -237,6 +333,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         #self.args.batch_size = 1
         train_data, train_loader = self._get_data(flag='train')
         test_data, test_loader = self._get_data(flag='test') # plot curve
+        scaler = test_data.scaler  # Assuming your dataset returns this
         #self.args.batch_size = batch_size
         if test:
             print('loading model')
@@ -287,9 +384,18 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 outputs = outputs.detach().cpu().numpy()
                 batch_y = batch_y.detach().cpu().numpy()
                 if test_data.scale and self.args.inverse:
-                    shape = outputs.shape
-                    outputs = test_data.inverse_transform(outputs.squeeze(0)).reshape(shape)
-                    batch_y = test_data.inverse_transform(batch_y.squeeze(0)).reshape(shape)
+                    shape = outputs.shape  # (batch, pred_len, features)
+                    outputs = outputs.reshape(-1, shape[-1])
+                    batch_y = batch_y.reshape(-1, shape[-1])
+                    
+                    outputs = test_data.inverse_transform(outputs)
+                    batch_y = test_data.inverse_transform(batch_y)
+
+                    outputs = outputs.reshape(shape)
+                    batch_y = batch_y.reshape(shape)
+                    # shape = outputs.shape
+                    # outputs = test_data.inverse_transform(outputs.squeeze(0)).reshape(shape)
+                    # batch_y = test_data.inverse_transform(batch_y.squeeze(0)).reshape(shape)
         
                 outputs = outputs[:, :, f_dim:]
                 batch_y = batch_y[:, :, f_dim:]
@@ -299,41 +405,22 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 preds.extend(pred)
                 trues.extend(true)
-                if with_curve and i % 20 == 0:
+                if with_curve:
                     input = batch_x.detach().cpu().numpy()
                     if test_data.scale and self.args.inverse:
-                        shape = input.shape
-                        input = test_data.inverse_transform(input.squeeze(0)).reshape(shape)
+                        shape = input.shape  # (batch, pred_len, features)
+                        input = input.reshape(-1, shape[-1])
+                        
+                        input = test_data.inverse_transform(input)
+
+                        input = outputs.reshape(shape)
+                        # shape = input.shape
+                        # input = test_data.inverse_transform(input.squeeze(0)).reshape(shape)
                     gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
                     pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
                     visual(gt, pd, os.path.join(folder_path, str(i) + '.svg'))
-                    
-                # # Generate SHAP explanations
-                # # Create subset of first 100 samples
-                # train_subset = Subset(train_data, indices=range(100))
 
-                # # Create DataLoader
-                # background_loader = DataLoader(train_subset, batch_size=100, shuffle=False)
-
-                # # Get batch and move to device
-                # background_batch = next(iter(background_loader))
-                # background = tuple(tensor.to(self.device) for tensor in background_batch)
-                # # Use only the input tensor for SHAP explanation
-                # background_input = [background[0].to(self.device),background[1].to(self.device),background[2].to(self.device) ] # First element of tuple
-    
-                # # Initialize explainer with proper input
-                # explainer = shap.DeepExplainer(
-                #     self.model, 
-                #     [inputs[0] for inputs in background_input]  # Only pass sequence data
-                # )
-                # # explainer = shap.DeepExplainer(self.model, background_input)
-                # shap_values = explainer.shap_values(batch_x)
-                
-                # # Visualize explanations
-                # shap.summary_plot(shap_values, batch_x, plot_type="bar")
-                # plt.savefig(folder_path + f'shap_{i}.png')
-                # plt.close()
-
+      
         preds = np.array(preds)
         trues = np.array(trues)
         print('test shape:', preds.shape, trues.shape)
@@ -341,10 +428,71 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
 
+        # Aggregate all predictions
+        preds = np.concatenate(preds, axis=0)
+        trues = np.concatenate(trues, axis=0)
+
+                # SHAP Analysis
+        # SHAP Analysis
+        # Feature names (modify according to your dataset)
+        feature_names = ['HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL', 'OT'] 
         # result save
-        # folder_path = './results/' + setting + '/'
-        # if not os.path.exists(folder_path):
-        #     os.makedirs(folder_path)
+        folder_path = './results/' + setting + '/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        
+        # Plot multivariate results
+        plot_multivariate_predictions(
+            actual=trues,
+            predicted=preds,
+            feature_names=feature_names,
+            samples_to_plot=3,  # Will create 3 separate plots
+            timesteps_to_plot=168,  # Show 1 week of hourly data
+            
+            title=f'Multivariate Predictions - {setting}',
+            save_path=os.path.join(folder_path, 'multivariate_predictions.png')
+        )
+        
+        # Additional per-feature metrics
+        feature_metrics = {}
+        for i, feat_name in enumerate(feature_names):
+            feat_pred = preds[:, i]
+            feat_true = trues[:, i]
+            
+            # Calculate metrics per feature
+            mae, mse, rmse, mape, mspe = metric(feat_pred.reshape(-1,1), feat_true.reshape(-1,1))
+            feature_metrics[feat_name] = {
+                'MAE': mae,
+                'MSE': mse,
+                'RMSE': rmse,
+                'MAPE': mape
+            }
+            
+            # Save individual feature plots
+            plot_predictions(
+                actual=feat_true[:672],  # First 4 weeks of data
+                predicted=feat_pred[:672],
+                title=f'{feat_name} Predictions',
+                save_path=os.path.join(folder_path, f'{feat_name}_predictions.png')
+            )
+        
+        # Function to convert numpy.float32 to standard float in a dictionary
+        def convert_to_float(data):
+            if isinstance(data, dict):
+                return {key: convert_to_float(value) for key, value in data.items()}
+            elif isinstance(data, list):
+                return [convert_to_float(item) for item in data]
+            elif isinstance(data, (np.float32, np.float64)):
+                return float(data)
+            else:
+                return data
+
+        # Convert feature_metrics
+        converted_feature_metrics = convert_to_float(feature_metrics)
+
+        # Save JSON
+        with open('output.json', 'w') as f:
+            json.dump(converted_feature_metrics, f, indent=4)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         # Log test metrics

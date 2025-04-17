@@ -1,6 +1,6 @@
 ## Data
 
-All the datasets are available at [Autoformer: Google Drive](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy). You only need to download `electricity`, `ETT-small`, `traffic`, `weather`, and put them under `./dataset/`.
+All the datasets are available at [Autoformer: Google Drive](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy). You only need to download `ETT-small`, and put them under `./dataset/`.
 
 ## Environment
 
@@ -15,9 +15,9 @@ pip install -r requirements.txt
 
 ## Reproducibility
 
-All the training scripts are provided in [scripts/long_term_forecast](./scripts/long_term_forecast). For instance, if you want to get the results for the `weather` dataset, you just need to run:
+All the training scripts are provided in [scripts/long_term_forecast](./scripts/long_term_forecast). For instance, if you want to get the results for the `ETTh1` dataset, you just need to run:
 ```
-bash ./scripts/long_term_forecast/Weather_script/TimeLinear.sh
+bash ./scripts/long_term_forecast/ETT_script/TimeLinear.sh
 ``` 
 The default `seq_len` in this repository is `96`. For other experimental settings, the hyperparameters that you can tune are:
 ```

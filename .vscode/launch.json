@@ -1,11 +1,83 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Run Script",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/test_model.py",
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+      {
+          "name": "Python: Run Script",
+          "type": "debugpy",
+          "request": "launch",
+          "program": "${workspaceFolder}/test_model.py",
+      },
+    {
+      "name": "Run ETTh1 Forecasting",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "run.py",
+      "args": [
+        "--time_feature_types", "HourOfDay",
+        "--task_name", "long_term_forecast",
+        "--is_training", "1",
+        "--with_curve", "1",
+        "--root_path", "./dataset/ETT-small/",
+        "--data_path", "ETTh1.csv",
+        "--model_id", "ETTh1_${input:seq_len}_96",
+        "--model", "${input:model_name}",
+        "--data", "ETTh1",
+        "--features", "M",
+        "--freq", "h",
+        "--seq_len", "${input:seq_len}",
+        "--pred_len", "96",
+        "--factor", "3",
+        "--enc_in", "7",
+        "--dec_in", "7",
+        "--c_out", "7",
+        "--des", "Exp",
+        "--rda", "1",
+        "--rdb", "1",
+        "--ksize", "5",
+        "--beta", "${input:beta}",
+        "--learning_rate", "0.01",
+        "--batch_size", "128",
+        "--train_epochs", "100",
+        "--num_workers", "10",
+        "--dropout", "0.0",
+        "--loss", "mse",
+        "--seed", "${input:seed}",
+        "--itr", "1",
+        "--inverse", "1",
+        "--patience", "3",
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "seq_len",
+      "type": "promptString",
+      "description": "Enter sequence length (e.g., 96, 192, 336)",
+      "default": "96"
+    },
+    {
+      "id": "model_name",
+      "type": "pickString",
+      "description": "Select model architecture",
+      "options": ["TimeLinear", "PatchTST", "FITS"],
+      "default": "TimeLinear"
+    },
+    {
+      "id": "beta",
+      "type": "promptString",
+      "description": "Enter beta value (0-1)",
+      "default": "0.5"
+    },
+    {
+      "id": "seed",
+      "type": "promptString",
+      "description": "Enter random seed",
+      "default": "2012"
+    }
+  ]
 }

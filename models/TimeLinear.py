@@ -16,7 +16,12 @@ class Model(nn.Module):
         self.histroy_proj = nn.Linear(self.seq_len, self.pred_len)
         self.time_proj = nn.Linear(self.seq_len, self.pred_len)
         self.fft_layer = nn.Linear(self.seq_len, args.c_out//4)
-        self.freq_proj = nn.Linear(args.c_out//4, args.c_out)
+        self.freq_proj = nn.Sequential(
+            nn.Conv1d(in_channels=4, out_channels=64, kernel_size=3, padding=1),  # Changed input channels
+            nn.ReLU(),
+            nn.Conv1d(64, 96, kernel_size=3, padding=1),
+        )
+        self.channel_align = nn.Conv1d(96, 7, kernel_size=1)  # Convert 96 channels → 7
         self.time_enc = nn.Sequential(
                                       nn.Linear(self.time_dim, args.c_out//args.rda), 
                                       nn.LayerNorm(args.c_out//args.rda),
@@ -50,20 +55,25 @@ class Model(nn.Module):
         time_out = self.time_proj(time_embed.transpose(1, 2)).transpose(1, 2)
 
         pred = self.histroy_proj(x.transpose(1, 2)).transpose(1, 2)
-        pred = self.beta * pred + (1 - self.beta) * time_out
-
-        pred = pred * stdev + means
+        pred = pred.unsqueeze(-2)
         # FFT Feature Extraction
-        fft_feats = self.fft_features(x)
-        fft_feats = F.relu(self.fft_layer(fft_feats))
-        fft_feats = self.freq_proj(fft_feats)
+        fft = torch.fft.rfft(pred, dim=-1)  # [B, M, 1, N_freq]
+        magnitudes = torch.abs(fft)
         
-        # Existing temporal processing
-        time_embed = self.time_enc(x_mark_enc)
-        time_out = self.time_proj(time_embed.transpose(1, 2)).transpose(1, 2)
+        # Reshape for Conv1D
+        magnitudes = magnitudes.squeeze(2)  # [B, M, N_freq]
+        magnitudes = magnitudes.permute(0, 2, 1)  # [B, N_freq, M] → [512, 49, 7]
+        magnitudes = magnitudes.float()
+        # Frequency processing
+        freq_feats = self.freq_proj(magnitudes)  # [B, 128, 7]
+        
+        # Adjust dimensions for fusion
+        freq_feats = self.channel_align(freq_feats) 
+        pred = pred.squeeze()
+        freq_feats = freq_feats.permute(0, 2, 1)
         
         # Combine features
-        combined = self.beta * (pred + fft_feats) + (1 - self.beta) * time_out
+        combined = self.beta * (pred + freq_feats) + (1 - self.beta) * time_out
         return combined * stdev + means
 
     def forecast(self, x, x_mark_enc, y_mark_dec):
