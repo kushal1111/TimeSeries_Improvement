@@ -331,3 +331,9 @@ mse:0.3092420697212219, mae:0.34678876399993896
 long_term_forecast_ETTm2_96_720_TimeModernTCN_ETTm2_ftM_ttMHHD_rda1_rdb1_ksize7_beta0.9_freqh_ebtimeF_bs512_Exp_2021  
 mse:0.41464340686798096, mae:0.4051521122455597
 
+long_term_forecast_ETTh1_96_96_TimeLinear_ETTh1_ftM_ttHD_rda1_rdb1_ksize5_beta0.5_freqh_ebtimeF_bs128_Exp_2025  
+mse:8.578217506408691, mae:1.4793893098831177
+
+long_term_forecast_ETTh1_96_96_TimeLinear_ETTh1_ftM_ttHD_rda1_rdb1_ksize5_beta0.5_freqh_ebtimeF_bs128_Exp_2025  
+mse:8.578217506408691, mae:1.4793893098831177
+
