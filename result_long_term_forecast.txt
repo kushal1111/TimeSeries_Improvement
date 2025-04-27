@@ -337,3 +337,9 @@ mse:8.578217506408691, mae:1.4793893098831177
 long_term_forecast_ETTh1_96_96_TimeLinear_ETTh1_ftM_ttHD_rda1_rdb1_ksize5_beta0.5_freqh_ebtimeF_bs128_Exp_2025  
 mse:8.578217506408691, mae:1.4793893098831177
 
+long_term_forecast_ETTh1_96_96_TimeLinear_ETTh1_ftM_ttHD_rda1_rdb1_ksize5_beta0.5_freqh_ebtimeF_bs128_Exp_2025  
+mse:8.624903678894043, mae:1.484787106513977
+
+long_term_forecast_ETTh1_96_96_TimeLinear_ETTh1_ftM_ttHD_rda1_rdb1_ksize5_beta0.5_freqh_ebtimeF_bs128_Exp_2025  
+mse:8.68901252746582, mae:1.483867883682251
+

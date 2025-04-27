@@ -76,6 +76,7 @@ def extract_time_features(data):
     data['month'] = data['date'].dt.month
     data['season'] = (data['month'] % 12 + 3) // 3  # 1: Winter, 2: Spring, 3: Summer, 4: Fall
     return data[['hour', 'day', 'month', 'season']]
+    # return data[['hour', 'day', 'month']]  # Only using hour for simplicity
 
 # Normalize Features
 def normalize_features(features):
@@ -151,7 +152,8 @@ def explain_model(model, X_test):
     shap_values = explainer.shap_values(X_test_np_flat[:50])  # Explain first 10 samples
 
     # Generate feature names for LIME
-    feature_names = [f't{i+1}_f{j+1}' for i in range(look_back) for j in range(X_test_np.shape[2])]
+    base_features = ['Hour of Day', 'Day of Week', 'Month', 'Season', 'Cyclic Component']
+    feature_names = [f'Time Step {i+1} - {feature}' for i in range(look_back) for feature in base_features]
 
     # Explain predictions using LIME
     explain_with_lime(model, X_test_np_flat[:10], feature_names)
@@ -165,7 +167,8 @@ def explain_model(model, X_test):
             shap_values_flat = shap_values_reshaped.reshape(50, -1)
 
             # Generate feature names for each time step and feature
-            feature_names = [f't{i+1}_f{j+1}' for i in range(look_back) for j in range(X_test_np.shape[2])]
+            base_features = ['Hour of Day', 'Day of Week', 'Month', 'Season', 'Cyclic Component']
+            feature_names = [f'Time Step {i+1} - {feature}' for i in range(look_back) for feature in base_features]
 
             # Visualize SHAP values for each output
             print(f"Visualizing SHAP values for output {i+1}")
@@ -177,7 +180,8 @@ def explain_model(model, X_test):
         shap_values_flat = shap_values_reshaped.reshape(50, -1)
 
         # Generate feature names for each time step and feature
-        feature_names = [f't{i+1}_f{j+1}' for i in range(look_back) for j in range(X_test_np.shape[2])]
+        base_features = ['Hour of Day', 'Day of Week', 'Month', 'Season', 'Cyclic Component']
+        feature_names = [f'Time Step {i+1} - {feature}' for i in range(look_back) for feature in base_features]
 
         # Visualize SHAP values
         shap.summary_plot(shap_values_flat, X_test_np_flat[:50], feature_names=feature_names)
@@ -274,10 +278,10 @@ def main():
         print(f'Test MSE: {mse:.4f}')
 
     # Explain Model
-    explain_model(model, X_test)
+    # explain_model(model, X_test)
 
     # t-SNE Visualization
-    visualize_tsne(model, X_test)
+    # visualize_tsne(model, X_test)
 
     # Ablation Studies
     feature_groups = {
@@ -285,8 +289,8 @@ def main():
         'Cyclic Feature': [4],           # cyclic
         'All Features': list(range(5))   # all features
     }
-    ablation_results = ablation_study(model, X_test, y_test, feature_groups)
-    print(ablation_results)
+    # ablation_results = ablation_study(model, X_test, y_test, feature_groups)
+    # print(ablation_results)
 
 if __name__ == '__main__':
     main()
